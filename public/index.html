@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head><title>configure image visual center</title></head>
+    <body><input type="file" id="input" accept="image/*"></input></body>
+    <script type="text/javascript" >document.getElementById("input").onchange = () => {
+        const file = document.getElementById("input").files[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = function () {
+            document.body.innerHTML = '<form method="post" action="/upload" style="display:none;"><input type="text" id="imageUpload" name="imageUpload"/><input type="text" id="imageUploadName" name="imageUploadName"/><input type="submit" id="imageUploadFormSubmit"/></form>';   
+            document.getElementById("imageUpload").value = reader.result;
+            document.getElementById("imageUploadName").value = file.name;
+            document.getElementById("imageUploadFormSubmit").click();
+        };
+        reader.onerror = function (error) {
+            console.error('ERROR: could not read image: ', error);
+        };
+
+
+    }</script>   
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>configure image visual center</title>
+    </head>
+    <body>
+        processing image...
+        <canvas id="canvas" style="display:none;"></canvas>
+        <script type="text/javascript" >
+            const fillWidth = 0.8;
+            window.onload = () => {
+                const interval = setInterval(() => {
+                    getStatus((status) => {
+                        if(status.status === "complete") {
+                            clearInterval(interval);
+                            const c = document.getElementById("canvas");
+                            c.width = 1024;
+                            c.height = 1024;
+                            const ctx = c.getContext("2d");
+                            const asp = status.res.width / status.res.height;
+
+                            const image = new Image();
+                            image.src = status.res.image;
+                            image.onload = () => {
+                                ctx.fillStyle = toRGB(status.res.bgColor);
+                                ctx.fillRect(0,0,1024,1024);
+                                const width = c.width * fillWidth, height = width / asp;
+                                const x = (c.width - width)/2 - width*(status.res.visualLeft-0.5), y = (c.height - height)/2 - height*(status.res.visualTop-0.5);
+                                ctx.drawImage(image, x,y,width,height);
+
+                                const canvasImage = c.toDataURL();
+                                download(canvasImage, status.res.imageName.split(".")[0]+" (visually-centered)");
+
+                                window.location.href = "http://localhost:2560/";
+                            }
+
+                        }
+                    });
+                }, 500);            
+            }
+
+            const download = (base64Data, fileName) => {
+                const linkSource = base64Data;
+                const downloadLink = document.createElement("a");
+                downloadLink.href = linkSource;
+                downloadLink.download = fileName;
+                downloadLink.click();
+            }
+        
+            const toRGB = (obj) => `rgba(${obj.r}, ${obj.g}, ${obj.b}, ${obj.a})`;
+            const getStatus = (cb) => {
+                fetch('./getResult')
+                    .then(response => response.json())
+                    .then(data => cb(data))
+                    .catch(err => console.error(err));
+            }
+        </script>   
+    </body>
+</html>
