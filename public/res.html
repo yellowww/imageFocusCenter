@@ -4,14 +4,21 @@
         <title>configure image visual center</title>
     </head>
     <body>
-        processing image...
+        <div id="processingText">processing image...</div>
+        <div id="optionContainer" style="display:none;">
+            <a href="http://localhost:2560/">back</a><br><br>
+            <button onclick="downloadImage()">download visually centered image</button>
+            <button onclick="downloadWhitespace()">download image with balanced whitespace</button>
+        </div>
         <canvas id="canvas" style="display:none;"></canvas>
         <script type="text/javascript" >
             const fillWidth = 1;
+            let canvasImage, resStatus;
             window.onload = () => {
                 const interval = setInterval(() => {
                     getStatus((status) => {
                         if(status.status === "complete") {
+                            resStatus = status;
                             clearInterval(interval);
                             const c = document.getElementById("canvas");
                             c.width = status.res.width;
@@ -27,16 +34,33 @@
                                 const width = c.width * fillWidth, height = width / asp;
                                 const x = (c.width - width)/2 - width*(status.res.visualLeft-0.5), y = (c.height - height)/2 - height*(status.res.visualTop-0.5);
                                 ctx.drawImage(image, x,y,width,height);
-
-                                const canvasImage = c.toDataURL();
-                                download(canvasImage, status.res.imageName.split(".")[0]+" (visually-centered)");
-
-                                window.location.href = "http://localhost:2560/";
+                                canvasImage = c.toDataURL();
+                                document.getElementById("processingText").style.display = "none";
+                                document.getElementById("optionContainer").style.display = "block";
                             }
 
                         }
                     });
                 }, 500);            
+            }
+
+            const downloadImage = () => {
+                download(canvasImage, resStatus.res.imageName.split(".")[0]+" (visually-centered)");
+            }
+
+            const downloadWhitespace = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = resStatus.res.width - (resStatus.res.mathCenter.left+resStatus.res.mathCenter.right);
+                canvas.height = resStatus.res.height - (resStatus.res.mathCenter.top+resStatus.res.mathCenter.bottom);
+                const c = canvas.getContext("2d");
+                const image = new Image();
+                image.src = resStatus.res.image;
+                image.onload = () => {
+                    const x = -resStatus.res.mathCenter.left, y = -resStatus.res.mathCenter.top;
+                    c.drawImage(image,x,y,resStatus.res.width,resStatus.res.height);
+                    const noWhitesspaceImage = canvas.toDataURL();
+                    download(noWhitesspaceImage, resStatus.res.imageName.split(".")[0]+" (ballanced-whitespace)");
+                }
             }
 
             const download = (base64Data, fileName) => {
