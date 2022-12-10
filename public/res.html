@@ -7,22 +7,22 @@
         processing image...
         <canvas id="canvas" style="display:none;"></canvas>
         <script type="text/javascript" >
-            const fillWidth = 0.8;
+            const fillWidth = 1;
             window.onload = () => {
                 const interval = setInterval(() => {
                     getStatus((status) => {
                         if(status.status === "complete") {
                             clearInterval(interval);
                             const c = document.getElementById("canvas");
-                            c.width = 1024;
-                            c.height = 1024;
+                            c.width = status.res.width;
+                            c.height = status.res.height;
                             const ctx = c.getContext("2d");
                             const asp = status.res.width / status.res.height;
 
                             const image = new Image();
                             image.src = status.res.image;
                             image.onload = () => {
-                                ctx.fillStyle = toRGB(status.res.bgColor);
+                                ctx.fillStyle = "rgba(0,0,0,0)";//toRGB(status.res.bgColor);
                                 ctx.fillRect(0,0,1024,1024);
                                 const width = c.width * fillWidth, height = width / asp;
                                 const x = (c.width - width)/2 - width*(status.res.visualLeft-0.5), y = (c.height - height)/2 - height*(status.res.visualTop-0.5);
